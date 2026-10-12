@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>807 永續密室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF1EE; --panel:#FFFFFF; --ink:#12232C; --muted:#4A5E66; --line:#C9D6D1;
+  --btn:#12232C; --btn-ink:#FFFFFF; --ok:#1E7B4F; --bad:#B3261E;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --serif:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1A22; --panel:#16262F; --ink:#EAF1EE; --muted:#9DB3BB; --line:#26404B;
+    --btn:#EAF1EE; --btn-ink:#0E1A22; --ok:#5FD39A; --bad:#FF8A80;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1A22; --panel:#16262F; --ink:#EAF1EE; --muted:#9DB3BB; --line:#26404B;
+  --btn:#EAF1EE; --btn-ink:#0E1A22; --ok:#5FD39A; --bad:#FF8A80;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--sans)}
+button{font:inherit;color:inherit}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-in{max-width:720px;margin:0 auto;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font:900 18px var(--serif)}
+.stat{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 56px}
+h1,h2,h3{font-family:var(--serif);margin:0}
+
+.hero h1{font-size:clamp(44px,13vw,72px);line-height:1.05;font-weight:900;letter-spacing:.02em}
+.hero p.lead{font-size:18px;margin:14px 0 0;max-width:30em}
+.doors{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:28px 0 24px}
+.door{aspect-ratio:3/5;border-radius:999px 999px 8px 8px;background:var(--c);color:var(--on);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 4px 14px;position:relative;overflow:hidden}
+.door::before{content:"";position:absolute;inset:10px 10px 0;border-radius:999px 999px 4px 4px;border:2px solid currentColor;opacity:.35}
+.door .n{font:900 clamp(26px,9vw,48px)/1 var(--serif);position:relative}
+.door .t{font-size:12px;text-align:center;line-height:1.35;margin-top:6px;position:relative}
+.note{font-size:14px;color:var(--muted);margin:14px 0 0}
+
+.btn{background:var(--btn);color:var(--btn-ink);border:0;border-radius:12px;padding:12px 20px;font-weight:700;font-size:16px;min-height:48px;cursor:pointer}
+.btn.accent{background:var(--accent);color:var(--on)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.opt:focus-visible,select:focus-visible,.key:focus-visible,.chk:focus-within{outline:3px solid var(--ink);outline-offset:2px}
+.btn.block{width:100%}
+
+.pips{display:flex;gap:10px;align-items:flex-end;margin-bottom:14px}
+.pip{width:30px;height:38px;border-radius:999px 999px 4px 4px;background:var(--c);color:var(--on);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;opacity:.35}
+.pip.now{opacity:1;outline:3px solid var(--ink);outline-offset:2px}
+.pip.done{opacity:1}
+.pips .lab{font-size:14px;color:var(--muted);margin-left:auto;align-self:center}
+
+.scene{border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--panel)}
+.scene-h{background:var(--accent);color:var(--on);padding:14px 16px}
+.scene-h .sdg{font-weight:700;font-size:14px}
+.scene-h h2{font-size:24px;line-height:1.3;font-weight:900;margin-top:2px}
+.story{padding:12px 16px;margin:0;color:var(--muted);font-size:15px}
+.room{position:relative;height:310px;background:
+  linear-gradient(to bottom,transparent 0 66%,rgba(0,0,0,.28) 66% 100%),
+  repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 2px,transparent 2px 46px),
+  var(--room)}
+.room::before{content:"";position:absolute;left:0;right:0;top:66%;height:3px;background:var(--accent);opacity:.85}
+.hs{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;color:#fff;cursor:pointer;padding:6px;min-width:68px;border-radius:12px}
+.hs .e{font-size:38px;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+.hs .l{font-size:12px;background:rgba(0,0,0,.5);padding:1px 8px;border-radius:99px;white-space:nowrap}
+.hs.done .l{background:var(--accent);color:var(--on)}
+.hs .dg{position:absolute;top:-4px;right:2px;min-width:24px;height:24px;border-radius:99px;background:var(--accent);color:var(--on);font:900 15px/24px var(--serif);text-align:center;padding:0 4px}
+.hs.lit .e{filter:drop-shadow(0 0 10px var(--accent)) drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+.hs:active{transform:translate(-50%,-50%) scale(.94)}
+.hs:focus-visible{outline:3px solid #fff;outline-offset:1px}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
+.card h3{font-size:18px;margin-bottom:8px}
+.reading{border-left:6px solid var(--accent)}
+.reading .who{font-weight:700;margin:0}
+.reading p{margin:4px 0 0}
+.notes{list-style:none;padding:0;margin:0;font-size:14px;color:var(--muted)}
+.notes li{padding:6px 0;border-top:1px solid var(--line)}
+.notes li:first-child{border-top:0}
+.notes b{color:var(--ink)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:12px;text-align:left;cursor:pointer;min-height:56px;display:flex;flex-direction:column;gap:2px}
+.opt .nm{font-weight:700}
+.opt .sub{font-size:13px;color:var(--muted)}
+.opt[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent);background:var(--panel)}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.field:first-of-type{border-top:0}
+.field label{flex:1;font-size:15px}
+select{font:inherit;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink);min-width:150px;max-width:55%;min-height:44px}
+.msg{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-size:15px}
+.msg.bad{border-color:var(--bad);color:var(--bad)}
+.msg.ok{border-color:var(--ok);color:var(--ok)}
+.actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+
+.win-card{border:2px solid var(--accent)}
+.riddle{font:900 20px/1.5 var(--serif);margin:6px 0 12px;padding:12px;border-radius:12px;background:var(--bg);border:2px dashed var(--accent);text-align:center}
+.tl{display:inline-flex;flex-direction:column;align-items:center;gap:5px}
+.tl .tr{display:flex;align-items:center;gap:4px}
+.tl .hp{background:#C8102E;color:#FFD66B;border:1.5px solid #E8B923;font:900 11px/1.2 var(--serif);letter-spacing:3px;padding:2px 8px 2px 11px;border-radius:2px}
+.tl svg{width:78px;height:auto;flex:none;display:block}
+.tl .cp{writing-mode:vertical-rl;text-orientation:upright;background:#C8102E;color:#FFD66B;border:1.5px solid #E8B923;font:900 11px/1.15 var(--serif);letter-spacing:1px;padding:5px 3px;border-radius:2px}
+.tl.big{gap:8px}
+.tl.big .tr{gap:8px}
+.tl.big .hp{font-size:19px;letter-spacing:6px;padding:4px 10px 4px 16px}
+.tl.big svg{width:150px}
+.tl.big .cp{font-size:19px;letter-spacing:3px;padding:9px 6px}
+.coup{text-align:center;margin:4px 0 10px}
+.coup .cap{font-size:13px;color:var(--muted);margin:8px 0 0}
+.hs .tlw{display:block;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+
+.slots{display:flex;gap:10px;justify-content:center;margin:14px 0}
+.slot{width:56px;height:68px;border-radius:12px;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font:900 34px var(--serif);background:var(--panel)}
+.slot.ghost{border-style:dashed;border-color:var(--line);color:var(--muted)}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:320px;margin:0 auto}
+.key{min-height:56px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);font:700 22px var(--sans);cursor:pointer}
+.key:active{background:var(--line)}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+.stars{font-size:36px;letter-spacing:6px}
+.recap{list-style:none;margin:0;padding:0}
+.recap li{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);align-items:flex-start}
+.recap .tag{flex:none;width:44px;height:44px;border-radius:999px 999px 6px 6px;background:var(--c);color:var(--on);display:flex;align-items:center;justify-content:center;font:900 18px var(--serif)}
+.recap p{margin:0;font-size:15px}
+.recap b{display:block}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:380px){.room{height:290px}.hs .e{font-size:32px}.slot{width:48px;height:60px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="brand">807 永續密室</div>
+  <div class="stat" id="stat"></div>
+</div></header>
+<main class="wrap" id="view"></main>
+
+<script>
+(function(){
+var CODE1='2807';
+var PATROL=['light','fanF','fanB','screen'];
+var PENALTY=30;
+
+var SDGLIST=[
+ {n:1,t:'SDG 1 消除貧窮'},
+ {n:2,t:'SDG 2 消除飢餓'},
+ {n:3,t:'SDG 3 健康與福祉'},
+ {n:4,t:'SDG 4 優質教育'},
+ {n:7,t:'SDG 7 可負擔的潔淨能源'},
+ {n:8,t:'SDG 8 尊嚴就業與經濟成長'}
+];
+var RECALL_ANS=[7,2,1];
+
+var CATS=[
+ {n:'全穀雜糧類',t:'白飯、麵、地瓜、玉米。提供身體主要的能量。'},
+ {n:'豆魚蛋肉類',t:'豆腐、魚、蛋、肉。提供蛋白質，幫助生長與修復。'},
+ {n:'乳品類',t:'牛奶、優格、起司。提供鈣質，幫助骨骼與牙齒。'},
+ {n:'蔬菜類',t:'各種顏色的蔬菜。提供維生素、礦物質與膳食纖維。'},
+ {n:'水果類',t:'各種水果。提供維生素與膳食纖維，盡量吃整顆水果。'},
+ {n:'油脂與堅果種子類',t:'植物油、花生、杏仁。提供必需脂肪酸，少量就夠。'}
+];
+var RID=[
+ {id:'old',t:'老人',ok:1},
+ {id:'dis',t:'身心障礙者',ok:1},
+ {id:'poor',t:'經濟弱勢的人',ok:1},
+ {id:'work',t:'上班族',ok:0},
+ {id:'ath',t:'運動員',ok:0},
+ {id:'teach',t:'老師',ok:0}
+];
+
+var LEVELS=[
+{key:'energy',sdg:7,name:'可負擔的潔淨能源',tag:'永續能源',c:'#FCC30B',on:'#1A1400',room:'#2A2818',
+ title:'第一關　807 教室：節能巡檢',
+ story:'你在 807 教室醒來，前門的電子鎖需要四位數密碼。牆上的巡檢面板說：依照順序巡視每個設備，確認運轉後，面板會顯示安全數字。',
+ objs:[
+  {id:'light',dev:1,d:2,e:'💡',l:'電燈',x:16,y:26,on:'電燈亮起。面板顯示數字 2。'},
+  {id:'sheet',e:'📋',l:'節能巡檢表',x:50,y:20,t:'節能巡檢表：巡視順序為電燈、前電扇、後電扇、大屏。必須照順序確認，順序錯誤會造成總開關跳電，所有設備重新關閉。'},
+  {id:'screen',dev:1,d:7,e:'🖥️',l:'大屏',x:84,y:28,on:'大屏亮起，播出今天的課表。面板顯示數字 7。'},
+  {id:'fanF',dev:1,d:8,e:'🌀',l:'前電扇',x:20,y:72,on:'前電扇開始轉動。面板顯示數字 8。'},
+  {id:'window',e:'🪟',l:'窗戶',x:50,y:56,t:'窗戶：白天陽光充足，多利用自然光，可以減少開燈的時間，這也是節能。'},
+  {id:'fanB',dev:1,d:0,e:'🌀',l:'後電扇',x:80,y:72,on:'後電扇開始轉動。面板顯示數字 0。'}
+ ],
+ hints:['先找牆上的節能巡檢表，看看要巡視的順序。','順序是電燈、前電扇、後電扇、大屏，依序點選。','四個設備都啟動後，面板顯示的數字由先到後，就是前門的密碼。'],
+ done:'密碼 2807 正確，前門解鎖。你學會依照正確順序操作設備，也想到節能：用電要有計畫，不用的時候就關掉。',
+ blurb:'SDG 7 的目標是讓所有人都能取得可負擔、可靠、永續的現代能源，並提高再生能源與能源效率。在教室裡，隨手關燈、關電扇、善用自然光，就是節能的第一步。'},
+
+{key:'notice',sdg:2,name:'消除飢餓',tag:'消除飢餓',c:'#DDA63A',on:'#1F1500',room:'#2D2616',
+ title:'第二關　營養教室：均衡的一餐',
+ story:'走出前門，你來到營養教室。出口門的鎖亮著紅燈，旁邊寫著：看懂牆上的公告，才能通過。',
+ objs:[
+  {id:'fridge',e:'🧊',l:'冷藏櫃',x:16,y:28,t:'冷藏櫃標語：全球約有三分之一的糧食，在生產到消費的過程中被損失或浪費。減少浪費也是消除飢餓。'},
+  {id:'notice',kind:'notice',e:'📌',l:'牆上公告',x:50,y:22,t:'牆上公告：營養均衡六大類。全穀雜糧類、豆魚蛋肉類、乳品類、蔬菜類、水果類、油脂與堅果種子類。'},
+  {id:'door',kind:'door',e:'🚪',l:'出口門',x:84,y:48,t:''},
+  {id:'tray',e:'🍱',l:'餐盤',x:22,y:72,t:'餐盤：只有白飯和炸雞，沒有蔬菜和水果。營養要靠不同種類的食物搭配。'},
+  {id:'bin',e:'🗑️',l:'廚餘桶',x:60,y:74,t:'廚餘桶：吃多少拿多少，才不會浪費食物。'}
+ ],
+ hints:['牆上公告是關鍵，點開它。','公告裡有六個類別，每一類都要點開讀。','六類都讀完後，出口門的鎖會變綠燈，再點一次門。'],
+ done:'出口門的鎖亮起綠燈。你認識了營養均衡六大類。人人都能吃飽、吃好，才算真正解決飢餓。',
+ blurb:'SDG 2 的目標是消除飢餓、實現糧食安全、改善營養，並促進永續農業。吃得夠，也要吃得均衡，同時減少糧食浪費。'},
+
+{key:'riddle',sdg:1,name:'消除貧窮',tag:'消除貧窮',c:'#E5243B',on:'#FFFFFF',room:'#33191D',
+ title:'第三關　班級教室：愛心罐',
+ story:'下一間是班級教室，門被鎖住。老師留言：教室裡有一個愛心鐵罐，外觀畫成一座客家圓樓，貼著紅色春聯和橫批。找到它，解開春聯的謎語，門就會開。小心，教室裡有好幾個罐子和容器。',
+ objs:[
+  {id:'bin',e:'♻️',l:'回收桶',x:18,y:28,t:'回收桶：裝滿寶特瓶和廢紙，沒有看到發票。'},
+  {id:'pen',e:'🖊️',l:'筆筒',x:50,y:22,t:'筆筒：只有筆和尺，沒有發票。'},
+  {id:'candy',e:'🍬',l:'糖果罐',x:82,y:30,t:'糖果罐：剩下幾顆糖，沒有發票。'},
+  {id:'jar',kind:'jar',tl:1,e:'🏯',l:'客家圓樓鐵罐',x:26,y:68,t:'客家圓樓鐵罐：鐵罐外觀畫成客家圓樓，罐蓋有投入口，兩側貼著春聯。上聯是「隨手捐發票」，下聯是「救救老殘窮」，橫批是「消除貧窮」。罐裡裝著一張張摺好的發票。罐身下面藏著一個問題，要回答才能開鎖。'},
+  {id:'box',e:'📦',l:'講桌紙箱',x:74,y:72,t:'講桌紙箱：放著班上的舊作業，沒有發票。'}
+ ],
+ hints:['有好幾個容器，逐一點開看看。外觀像老房子、貼著紅色春聯的鐵罐才是愛心罐。','找到客家圓樓鐵罐後，回答春聯下面的問題。','「老殘窮」是三個字：老、殘、窮，各代表一類人。橫批「消除貧窮」也在提醒你這一關的目標。'],
+ done:'春聯的謎語解開，鐵罐的蓋子彈開，掉出一把鑰匙，教室門也跟著打開。橫批寫著「消除貧窮」，小小的一張發票，也能變成幫助別人的力量。',
+ blurb:'SDG 1 的目標是消除各地一切形式的貧窮。發票捐給社福團體後，若中獎，獎金由團體領取，用來幫助老人、身心障礙者與經濟弱勢的家庭。隨手捐發票，是人人做得到的小行動。'},
+
+{key:'recall',sdg:0,name:'回想旅程',tag:'回想旅程',c:'#2F6F73',on:'#FFFFFF',room:'#17262B',
+ title:'最終關　807 密室：出口',
+ story:'最後的出口在 807 教室的後門。門鎖需要三位數：回想你闖過的三個關卡，依通關順序填入它們對應的 SDGs 編號。',
+ objs:[
+  {id:'door',e:'🚪',l:'807 後門',x:50,y:26,t:'807 後門：鎖上有三個空格，要填入三個關卡的 SDGs 編號，依通關順序排列。'},
+  {id:'m1',e:'💡',l:'回想第一關',x:20,y:68,t:'回想第一關：你依照順序檢查電燈、電扇和大屏，學到用電要有計畫、要節能。'},
+  {id:'m2',e:'🍱',l:'回想第二關',x:50,y:68,t:'回想第二關：你讀了牆上公告，認識營養均衡六大類，也知道不能浪費糧食。'},
+  {id:'m3',e:'🧾',l:'回想第三關',x:80,y:68,t:'回想第三關：你找到客家圓樓鐵罐，讀了春聯和橫批「消除貧窮」，知道發票可以幫助老人、身心障礙者與經濟弱勢的人。'}
+ ],
+ hints:['點選下面三個回想物品，想起每一關在做什麼。','SDGs 有 17 個目標，每個目標都有編號。第一關是能源，第二關是飢餓，第三關是貧窮。','能源是 7，飢餓是 2，貧窮是 1，依通關順序是 7、2、1。'],
+ done:'',blurb:''}
+];
+
+var S;
+function fresh(){
+  return {screen:'intro',lv:0,found:{},solved:{},hintN:{},hints:0,reading:null,msg:null,
+    patrol:[],code:'',shake:false,noticeSeen:[],noticeIdx:null,noticeDone:false,
+    riddle:[],recall:['','',''],start:0,end:0};
+}
+S=fresh();
+
+function el(id){return document.getElementById(id)}
+function elapsed(){ if(!S.start) return 0; return Math.floor(((S.end||Date.now())-S.start)/1000); }
+function fmt(s){var m=Math.floor(s/60),r=s%60;return m+':'+(r<10?'0':'')+r}
+function has(id){return (S.found[S.lv]||[]).indexOf(id)>-1}
+function tog(arr,id){var i=arr.indexOf(id); if(i>-1)arr.splice(i,1); else arr.push(id)}
+function objOf(id){return LEVELS[S.lv].objs.filter(function(x){return x.id===id})[0]}
+
+function updateTop(){
+  var t='';
+  if(S.screen!=='intro'){ t='時間 '+fmt(elapsed()+S.hints*PENALTY)+'　提示 '+S.hints; }
+  el('stat').textContent=t;
+}
+setInterval(function(){ if(S.screen==='level') updateTop(); },1000);
+
+/* ---------- views ---------- */
+function introHTML(){
+  var d=LEVELS.map(function(L,i){
+    var n=i<3?L.sdg:'807';
+    return '<div class="door" style="--c:'+L.c+';--on:'+L.on+'"><div class="n">'+n+'</div><div class="t">'+(i<3?L.tag:'出口')+'</div></div>';
+  }).join('');
+  return '<section class="hero">'+
+   '<h1>807 永續密室</h1>'+
+   '<p class="lead">你被鎖在 807 教室。要逃出去，得闖過三個 SDGs 關卡，再回想這趟旅程，找出最後的出口密碼。</p>'+
+   '<div class="doors" aria-hidden="true">'+d+'</div>'+
+   '<button class="btn block" data-act="start" style="font-size:18px;min-height:56px">開始脫逃</button>'+
+   '<p class="note">點選房間裡的物品找線索。卡關時可以看提示，每次提示會增加 30 秒成績時間。</p>'+
+  '</section>';
+}
+
+function pips(){
+  var h='<div class="pips" aria-label="關卡進度">';
+  var lab=['7','2','1','出'];
+  LEVELS.forEach(function(L,i){
+    var cls='pip'+(S.solved[i]?' done':'')+(i===S.lv&&S.screen==='level'?' now':'');
+    h+='<div class="'+cls+'" style="--c:'+L.c+';--on:'+L.on+'">'+(S.solved[i]?'✓':lab[i])+'</div>';
+  });
+  h+='<span class="lab">第 '+(S.lv+1)+' 關，共 4 關</span></div>';
+  return h;
+}
+
+function keypadHTML(){
+  var slots='', i, patrolDigits=S.patrol.map(function(id){return objOf(id).d});
+  for(i=0;i<4;i++) slots+='<div class="slot">'+(S.code[i]||'')+'</div>';
+  var show='';
+  for(i=0;i<4;i++) show+='<div class="slot ghost">'+(patrolDigits[i]!==undefined?patrolDigits[i]:'？')+'</div>';
+  var keys='';
+  [1,2,3,4,5,6,7,8,9].forEach(function(n){keys+='<button class="key" data-act="key" data-k="'+n+'">'+n+'</button>'});
+  keys+='<button class="key" data-act="clear" style="font-size:16px">清除</button><button class="key" data-act="key" data-k="0">0</button><button class="key" data-act="back" aria-label="刪除一碼">⌫</button>';
+  return '<h3>前門密碼鎖</h3>'+
+   '<p style="margin:0;color:var(--muted);font-size:15px">巡檢面板目前顯示的數字：</p>'+
+   '<div class="slots" style="margin:8px 0">'+show+'</div>'+
+   '<p style="margin:0;color:var(--muted);font-size:15px">輸入四位數密碼：</p>'+
+   '<div class="slots'+(S.shake?' shake':'')+'">'+slots+'</div>'+
+   '<div class="keys">'+keys+'</div>';
+}
+
+function noticePuzzle(){
+  var status=S.noticeDone?'鎖已解開，點選房間裡的出口門。':'上鎖中。先讀完牆上公告的六大類，門才會解鎖。';
+  return '<h3>出口門鎖</h3><p style="margin:0;color:var(--muted);font-size:15px">公告閱讀進度：'+S.noticeSeen.length+' / 6</p>'+
+    '<p class="msg '+(S.noticeDone?'ok':'')+'" style="margin-top:10px">'+status+'</p>';
+}
+
+function tulouHTML(big){
+  var svg='<svg viewBox="0 0 90 92" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'+
+   '<ellipse cx="45" cy="80" rx="35" ry="8" fill="#C58F5C"/>'+
+   '<rect x="10" y="28" width="70" height="52" fill="#C58F5C"/>'+
+   '<rect x="10" y="28" width="70" height="12" fill="#3E3B43"/>'+
+   '<ellipse cx="45" cy="40" rx="35" ry="8" fill="#3E3B43"/>'+
+   '<g fill="#4A2E1A"><rect x="16" y="52" width="5" height="7"/><rect x="27" y="52" width="5" height="7"/><rect x="58" y="52" width="5" height="7"/><rect x="69" y="52" width="5" height="7"/>'+
+   '<rect x="16" y="64" width="5" height="7"/><rect x="27" y="64" width="5" height="7"/><rect x="58" y="64" width="5" height="7"/><rect x="69" y="64" width="5" height="7"/></g>'+
+   '<path d="M37 86 V70 a8 8 0 0 1 16 0 V86 Z" fill="#7A1E1E"/>'+
+   '<path d="M10 78 a35 8 0 0 0 70 0" fill="none" stroke="#A7ADB3" stroke-width="3"/>'+
+   '<ellipse cx="45" cy="28" rx="35" ry="8" fill="#A7ADB3"/>'+
+   '<ellipse cx="45" cy="28" rx="30" ry="6" fill="#7B8187"/>'+
+   '<rect x="35" y="26" width="20" height="4" rx="2" fill="#1B1B1B"/>'+
+   '</svg>';
+  return '<span class="tl'+(big?' big':'')+'" aria-hidden="true"><span class="hp">消除貧窮</span><span class="tr"><span class="cp">救救老殘窮</span>'+svg+'<span class="cp">隨手捐發票</span></span></span>';
+}
+
+function riddlePuzzle(){
+  if(!has('jar')) return '<h3>謎語卡</h3><p class="msg" style="margin-top:0">還沒找到愛心罐。逐一點開教室裡的容器，找出外觀像客家圓樓、貼著春聯的鐵罐。</p>';
+  var opts=RID.map(function(r){
+    return '<button class="opt" data-act="rid" data-id="'+r.id+'" aria-pressed="'+(S.riddle.indexOf(r.id)>-1)+'"><span class="nm">'+r.t+'</span></button>';
+  }).join('');
+  return '<h3>圓樓鐵罐的春聯</h3>'+
+    '<div class="coup">'+tulouHTML(true)+'<p class="cap">右邊是上聯，左邊是下聯，上方是橫批</p></div>'+
+    '<div class="riddle">上聯：隨手捐發票<br>下聯：救救老殘窮<br>橫批：消除貧窮</div>'+
+    '<p style="margin:0 0 10px">「老殘窮」指的是哪三類人？選出三個答案。</p><div class="grid2">'+opts+'</div>';
+}
+
+function recallPuzzle(){
+  var q=['第一關：依照順序檢查電燈、電扇、大屏，學到節能。這是哪個目標？','第二關：認識營養均衡六大類，也不浪費糧食。這是哪個目標？','第三關：圓樓鐵罐的春聯，幫助老人、身心障礙者與經濟弱勢的人。這是哪個目標？'];
+  var rows=q.map(function(t,i){
+    var opts='<option value="">選擇 SDG</option>'+SDGLIST.map(function(s){return '<option value="'+s.n+'"'+(String(S.recall[i])===String(s.n)?' selected':'')+'>'+s.t+'</option>'}).join('');
+    return '<div class="field"><label for="rc'+i+'">'+t+'</label><select id="rc'+i+'" data-act="recall" data-i="'+i+'">'+opts+'</select></div>';
+  }).join('');
+  var slots='';
+  for(var i=0;i<3;i++) slots+='<div class="slot">'+(S.recall[i]||'')+'</div>';
+  return '<h3>807 後門鎖</h3><div class="slots'+(S.shake?' shake':'')+'">'+slots+'</div>'+rows;
+}
+
+function puzzleHTML(L){
+  var body='', btn='';
+  if(L.key==='energy') body=keypadHTML();
+  if(L.key==='notice') body=noticePuzzle();
+  if(L.key==='riddle'){ body=riddlePuzzle(); if(has('jar')) btn='解開謎語'; }
+  if(L.key==='recall'){ body=recallPuzzle(); btn='輸入密碼，逃出 807'; }
+  var msg=S.msg?'<p class="msg '+S.msg.k+'" role="status">'+S.msg.t+'</p>':'';
+  var n=S.hintN[S.lv]||0, hintList='';
+  for(var i=0;i<n;i++) hintList+='<li>'+L.hints[i]+'</li>';
+  var hintBlock='<div class="card"><h3>提示</h3>'+
+    (n?'<ul class="notes">'+hintList+'</ul>':'<p style="margin:0;color:var(--muted);font-size:15px">還沒看提示。每次提示會增加 30 秒成績時間。</p>')+
+    '<div class="actions"><button class="btn ghost" data-act="hint"'+(n>=L.hints.length?' disabled':'')+'>'+(n>=L.hints.length?'提示已用完':'看提示，加 30 秒')+'</button></div></div>';
+  return '<section class="card">'+body+msg+
+    (btn?'<div class="actions"><button class="btn accent" data-act="submit">'+btn+'</button></div>':'')+'</section>'+hintBlock;
+}
+
+function successHTML(L){
+  var tag=L.sdg?('SDG '+L.sdg):'';
+  return '<section class="card win-card">'+
+   '<h3>過關</h3>'+
+   '<p style="margin:0 0 10px">'+L.done+'</p>'+
+   '<p style="margin:0;color:var(--muted);font-size:15px">'+L.blurb+'</p>'+
+   '<div class="actions"><button class="btn accent block" data-act="next">前往下一關</button></div>'+
+  '</section>';
+}
+
+function readingHTML(){
+  var r=S.reading;
+  if(r&&r.kind==='notice'){
+    var chips=CATS.map(function(c,i){
+      return '<button class="opt" data-act="cat" data-i="'+i+'" aria-pressed="'+(S.noticeSeen.indexOf(i)>-1)+'"><span class="nm">'+c.n+'</span></button>';
+    }).join('');
+    var det=S.noticeIdx!==null?'<p class="msg" style="margin-top:12px"><b>'+CATS[S.noticeIdx].n+'</b>　'+CATS[S.noticeIdx].t+'</p>':'';
+    var fin=S.noticeDone?'<p class="msg ok">六大類都讀完了。出口門的鎖亮起綠燈。</p>':'';
+    return '<p class="who">牆上公告：營養均衡六大類</p><p style="margin-bottom:10px">點開每一類，把內容讀完（已讀 '+S.noticeSeen.length+' / 6）。</p><div class="grid2">'+chips+'</div>'+det+fin;
+  }
+  if(r) return '<p class="who">'+r.l+'</p><p>'+r.t+'</p>';
+  return '<p class="who">觀察</p><p>點選房間裡的物品，仔細看看。</p>';
+}
+
+function levelHTML(){
+  var L=LEVELS[S.lv], found=S.found[S.lv]||[], solved=S.solved[S.lv];
+  var room=L.objs.map(function(o){
+    var d, extra='', cls='hs', lab=o.l;
+    if(o.dev){ d=S.patrol.indexOf(o.id)>-1; if(d){cls+=' done lit'; extra='<span class="dg">'+o.d+'</span>'; lab='✓ '+o.l;} }
+    else { d=found.indexOf(o.id)>-1; if(d){cls+=' done'; lab='✓ '+o.l;} }
+    return '<button class="'+cls+'" style="left:'+o.x+'%;top:'+o.y+'%" data-act="hs" data-id="'+o.id+'">'+extra+
+      (o.tl?'<span class="tlw">'+tulouHTML(false)+'</span>':'<span class="e" aria-hidden="true">'+o.e+'</span>')+'<span class="l">'+lab+'</span></button>';
+  }).join('');
+  var notes='';
+  var nf=L.objs.filter(function(o){return !o.dev&&o.t&&found.indexOf(o.id)>-1});
+  if(nf.length){
+    notes='<section class="card"><h3>線索筆記</h3><ul class="notes">'+nf.map(function(o){return '<li><b>'+o.l+'</b>　'+o.t+'</li>'}).join('')+'</ul></section>';
+  }
+  var head=L.sdg?('SDG '+L.sdg+'　'+L.name):'回想旅程';
+  return '<div style="--accent:'+L.c+';--on:'+L.on+';--room:'+L.room+'">'+pips()+
+   '<section class="scene"><div class="scene-h"><div class="sdg">'+head+'</div><h2>'+L.title+'</h2></div>'+
+   '<p class="story">'+L.story+'</p><div class="room">'+room+'</div></section>'+
+   '<section class="card reading" aria-live="polite">'+readingHTML()+'</section>'+
+   notes+
+   (solved?successHTML(L):puzzleHTML(L))+
+  '</div>';
+}
+
+function winHTML(){
+  var score=elapsed()+S.hints*PENALTY;
+  var stars=score<=600?3:(score<=1000?2:1);
+  var s='';
+  for(var i=0;i<3;i++) s+=i<stars?'★':'☆';
+  var recap=[
+   ['SDG 7　可負擔的潔淨能源','依照順序巡檢電燈、電扇與大屏，輸入密碼 2807。節能從隨手關燈開始。'],
+   ['SDG 2　消除飢餓','讀完營養均衡六大類。吃得均衡、不浪費，是對抗飢餓的基本功。'],
+   ['SDG 1　消除貧窮','找到客家圓樓鐵罐，讀懂春聯與橫批「消除貧窮」：「老殘窮」是老人、身心障礙者與經濟弱勢的人。']
+  ];
+  var li=recap.map(function(r,i){
+    var L=LEVELS[i];
+    return '<li><div class="tag" style="--c:'+L.c+';--on:'+L.on+'">'+L.sdg+'</div><p><b>'+r[0]+'</b>'+r[1]+'</p></li>';
+  }).join('');
+  return '<section class="card win-card" style="--accent:var(--ink)">'+
+   '<h2 style="font-size:30px;font-weight:900">成功逃出 807 密室</h2>'+
+   '<p class="stars" aria-label="'+stars+' 顆星">'+s+'</p>'+
+   '<p style="margin:0">成績時間 <b>'+fmt(score)+'</b>，實際用時 '+fmt(elapsed())+'，使用提示 '+S.hints+' 次。</p>'+
+   '<p style="margin:10px 0 0;color:var(--muted);font-size:15px">最後的密碼是 7、2、1，正是你闖過的三個 SDGs 編號。永續不是遙遠的口號，而是生活裡的選擇。</p></section>'+
+   '<section class="card"><h3>你的旅程</h3><ul class="recap">'+li+'</ul></section>'+
+   '<div class="actions"><button class="btn block" data-act="restart">再玩一次</button></div>';
+}
+
+function render(top){
+  var v=el('view');
+  if(S.screen==='intro') v.innerHTML=introHTML();
+  else if(S.screen==='level') v.innerHTML=levelHTML();
+  else v.innerHTML=winHTML();
+  updateTop();
+  if(top) window.scrollTo(0,0);
+}
+
+/* ---------- logic ---------- */
+function solve(){
+  S.solved[S.lv]=true; S.msg=null; render(false);
+  var w=document.querySelector('.win-card'); if(w) w.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function submit(){
+  var L=LEVELS[S.lv];
+  if(L.key==='riddle'){
+    var sel=S.riddle;
+    var wrong=sel.filter(function(id){return !RID.filter(function(x){return x.id===id})[0].ok}).length;
+    var miss=RID.filter(function(x){return x.ok&&sel.indexOf(x.id)<0}).length;
+    if(!sel.length) S.msg={k:'bad',t:'還沒有選擇答案。'};
+    else if(wrong) S.msg={k:'bad',t:'答案不對。「老殘窮」是三個字，各代表一類人，有選項不屬於它們。'};
+    else if(miss) S.msg={k:'bad',t:'還缺 '+miss+' 類人。老、殘、窮，各代表一類。'};
+    else { solve(); return; }
+    render(false);
+  }
+  if(L.key==='recall'){
+    var r=S.recall, n=0;
+    if(r.indexOf('')>-1){ S.msg={k:'bad',t:'三個空格都要填。'}; render(false); return; }
+    r.forEach(function(x,i){ if(Number(x)===RECALL_ANS[i]) n++; });
+    if(n===3){ S.end=Date.now(); S.solved[S.lv]=true; S.screen='win'; S.msg=null; render(true); }
+    else { S.msg={k:'bad',t:'鎖發出警告聲，三個編號裡有 '+(3-n)+' 個不對。點下方的回想物品，想想每一關在做什麼。'}; S.shake=true; render(false); S.shake=false; }
+  }
+}
+
+function checkCode(){
+  if(S.code===CODE1){ S.code=''; solve(); }
+  else{
+    S.msg={k:'bad',t:'密碼錯誤，電子鎖發出短促的警告聲。巡檢面板顯示的數字是什麼？'};
+    S.code=''; S.shake=true; render(false); S.shake=false;
+  }
+}
+
+function hotspot(id){
+  var L=LEVELS[S.lv], o=objOf(id);
+  var f=S.found[S.lv]=S.found[S.lv]||[];
+  S.msg=null;
+  if(o.dev){
+    if(S.patrol.indexOf(id)>-1){ S.reading={l:o.l,t:o.l+'已經開啟，面板數字是 '+o.d+'。'}; }
+    else if(PATROL[S.patrol.length]===id){ S.patrol.push(id); S.reading={l:o.l,t:o.on}; }
+    else { S.patrol=[]; S.reading={l:o.l,t:'順序錯誤！總開關跳電，所有設備關閉。請照巡檢表的順序重新操作。'}; S.msg={k:'bad',t:'跳電重置。先找找巡檢表，確認順序。'}; }
+  }
+  else if(o.kind==='notice'){ if(f.indexOf(id)<0) f.push(id); S.reading={l:o.l,kind:'notice'}; }
+  else if(o.kind==='door'&&L.key==='notice'){
+    if(!S.noticeDone) S.reading={l:'出口門',t:'門鎖亮著紅燈：請先看懂牆上公告，門才會解鎖。'};
+    else { S.reading={l:'出口門',t:'門鎖亮起綠燈，出口門打開。'}; S.solved[S.lv]=true; render(false); var w=document.querySelector('.win-card'); if(w) w.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  }
+  else {
+    if(f.indexOf(id)<0) f.push(id);
+    S.reading={l:o.l,t:o.t};
+  }
+  render(false);
+}
+
+el('view').addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]'); if(!t) return;
+  var a=t.getAttribute('data-act'), id=t.getAttribute('data-id');
+  if(a==='start'){ S.screen='level'; S.start=Date.now(); render(true); }
+  else if(a==='hs'){ hotspot(id); }
+  else if(a==='cat'){
+    var i=+t.getAttribute('data-i'); S.noticeIdx=i;
+    if(S.noticeSeen.indexOf(i)<0) S.noticeSeen.push(i);
+    if(S.noticeSeen.length===CATS.length) S.noticeDone=true;
+    render(false);
+  }
+  else if(a==='rid'){ tog(S.riddle,id); S.msg=null; render(false); }
+  else if(a==='submit'){ submit(); }
+  else if(a==='hint'){
+    var L=LEVELS[S.lv], n=S.hintN[S.lv]||0;
+    if(n<L.hints.length){ S.hintN[S.lv]=n+1; S.hints++; render(false); }
+  }
+  else if(a==='next'){ S.msg=null; S.reading=null; S.code=''; if(S.lv<LEVELS.length-1) S.lv++; render(true); }
+  else if(a==='key'){ if(S.code.length<4){ S.code+=t.getAttribute('data-k'); S.msg=null; render(false); if(S.code.length===4) setTimeout(checkCode,250); } }
+  else if(a==='back'){ S.code=S.code.slice(0,-1); render(false); }
+  else if(a==='clear'){ S.code=''; S.msg=null; render(false); }
+  else if(a==='restart'){ S=fresh(); render(true); }
+});
+el('view').addEventListener('change',function(e){
+  var t=e.target, a=t.getAttribute('data-act');
+  if(a==='recall'){ S.recall[+t.getAttribute('data-i')]=t.value; S.msg=null; render(false); }
+});
+
+render(false);
+})();
+</script>
+</body>
+</html>
